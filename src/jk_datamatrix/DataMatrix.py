@@ -2,6 +2,7 @@
 
 
 from operator import itemgetter
+import typing
 
 from jk_console import SimpleTable, SimpleTableCell, SimpleTableColumn, SimpleTableConstants, SimpleTableRow
 
@@ -14,30 +15,19 @@ from .DataMatrixRow import DataMatrixRow
 
 class DataMatrix(object):
 
+	################################################################################################################################
+	## Constructor Method
+	################################################################################################################################
+
 	def __init__(self, columnNames:list):
 		self.__columnNames = columnNames
 		self.__nCols = len(self.__columnNames)
 		self.__rows = []
 	#
 
-	def clear(self):
-		self.__rows.clear()
-	#
-
-	def __bool__(self):
-		return len(self.__rows) > 0
-	#
-
-	def __len__(self):
-		return len(self.__rows)
-	#
-
-	def __createColumnNamesToIndexMap(self) -> dict:
-		ret = {}
-		for i, c in enumerate(self.__columnNames):
-			ret[c] = i
-		return ret
-	#
+	################################################################################################################################
+	## Public Properties
+	################################################################################################################################
 
 	@property
 	def columnNames(self) -> list:
@@ -65,6 +55,40 @@ class DataMatrix(object):
 		if self.__rows:
 			return DataMatrixRow(cmim, self.__rows[0])
 		return None
+	#
+
+	################################################################################################################################
+	## Helper Method
+	################################################################################################################################
+
+	def __createColumnNamesToIndexMap(self) -> dict:
+		ret = {}
+		for i, c in enumerate(self.__columnNames):
+			ret[c] = i
+		return ret
+	#
+
+	################################################################################################################################
+	## Public Method
+	################################################################################################################################
+
+	def clone(self):
+		dm = DataMatrix(list(self.__columnNames))
+		for row in self.__rows:
+			dm.__rows.append(list(row))
+		return dm
+	#
+
+	def clear(self):
+		self.__rows.clear()
+	#
+
+	def __bool__(self):
+		return len(self.__rows) > 0
+	#
+
+	def __len__(self):
+		return len(self.__rows)
 	#
 
 	def getRow(self, rowNo:int) -> DataMatrixRow:
@@ -117,7 +141,8 @@ class DataMatrix(object):
 		return None
 	#
 
-	def extractFilterByValues(self, columnNamesToData:dict):
+	def extractFilterByValues(self, **columnNamesToData):
+		assert columnNamesToData
 		cmim = self.__createColumnNamesToIndexMap()
 
 		columnIndicesToData = {}
@@ -162,6 +187,57 @@ class DataMatrix(object):
 				return DataMatrixRow(cmim, row)
 
 		return None
+	#
+
+	def removeRowsByValues(self, **columnNamesToData) -> int:
+		assert columnNamesToData
+		cmim = self.__createColumnNamesToIndexMap()
+
+		columnIndicesToData = {}
+		for columnName, expectedValue in columnNamesToData.items():
+			assert isinstance(columnName, str)
+			assert columnName in cmim
+			columnIndicesToData[cmim[columnName]] = expectedValue
+
+		listOfRowsToRemove = []
+		for i, row in enumerate(self.__rows):
+			bOk = True
+			for columnIndex, expectedValue in columnIndicesToData.items():
+				v = row[columnIndex]
+				if v != expectedValue:
+					bOk = False
+					break
+			if bOk:
+				listOfRowsToRemove.append(i)
+
+		for i in reversed(listOfRowsToRemove):
+			del self.__rows[i]
+
+		return len(listOfRowsToRemove)
+	#
+
+	def removeRowByValues(self, **columnNamesToData) -> bool:
+		assert columnNamesToData
+		cmim = self.__createColumnNamesToIndexMap()
+
+		columnIndicesToData = {}
+		for columnName, expectedValue in columnNamesToData.items():
+			assert isinstance(columnName, str)
+			assert columnName in cmim
+			columnIndicesToData[cmim[columnName]] = expectedValue
+
+		for i, row in enumerate(self.__rows):
+			bOk = True
+			for columnIndex, expectedValue in columnIndicesToData.items():
+				v = row[columnIndex]
+				if v != expectedValue:
+					bOk = False
+					break
+			if bOk:
+				del self.__rows[i]
+				return True
+
+		return False
 	#
 
 	def extractFilterByLatestEncountered(self, columnName:str):
@@ -263,10 +339,16 @@ class DataMatrix(object):
 		return -1
 	#
 
-	def addRow(self, *args):
+	def addRow(self, *args, **kwargs):
 		data = list(args)
+
 		while len(data) < self.__nCols:
 			data.append(None)
+
+		for columnName, v in kwargs.items():
+			n = self.getColumnIndexE(columnName)
+			data[n] = v
+
 		self.__rows.append(data)
 	#
 
@@ -280,6 +362,7 @@ class DataMatrix(object):
 		table.print()
 		print()
 	#
+
 #
 
 

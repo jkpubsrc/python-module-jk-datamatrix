@@ -34,6 +34,9 @@ m.orderByColumn("status")
 
 m.dump()
 
+m.removeRowsByValues(number=345)
+
+m.dump()
 
 
 
