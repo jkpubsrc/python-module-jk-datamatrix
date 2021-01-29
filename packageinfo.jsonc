@@ -23,7 +23,7 @@
 		"license": "Apache2",
 		"name": "jk_datamatrix",
 		"packageClass": "python-module",
-		"version": "0.2020.4.17"
+		"version": "0.2021.1.29"
 	},
 	"repositories": [
 		{

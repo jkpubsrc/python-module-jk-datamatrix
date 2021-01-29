@@ -1,4 +1,4 @@
-﻿jk_datamatrix
+jk_datamatrix
 ==========
 
 Introduction

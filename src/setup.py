@@ -21,9 +21,9 @@ setup(
 	classifiers = [
 		"Development Status :: 3 - Alpha",
 		"License :: OSI Approved :: Apache Software License",
+		"Programming Language :: Python :: 3",
 	],
 	description = "This python module provides a class that represents a data matrix. This is basically a table you can work with: Modify, sort, filter and print. Everthing is kept in memory, is not indexed, and therefore intended for a limited amount of data only.",
-	download_url = "https://github.com/jkpubsrc/python-module-jk-datamatrix/tarball/0.2020.4.16",
 	include_package_data = False,
 	install_requires = [
 		"jk_console",
@@ -34,13 +34,12 @@ setup(
 		"data",
 		"datatable",
 	],
-	license = "Apache 2.0",
+	license = "Apache2",
 	name = "jk_datamatrix",
 	packages = [
 		"jk_datamatrix",
 	],
-	url = "https://github.com/jkpubsrc/python-module-jk-datamatrix",
-	version = "0.2020.4.16",
+	version = "0.2021.1.29",
 	zip_safe = False,
 	long_description = readme(),
 	long_description_content_type="text/markdown",

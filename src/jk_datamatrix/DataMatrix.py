@@ -126,6 +126,16 @@ class DataMatrix(object):
 		return ret
 	#
 
+	def getAllColumnValues(self, columnName:str) -> list:
+		n = self.getColumnIndexE(columnName)
+
+		ret = []
+		for row in self.__rows:
+			ret.append(row[n])
+
+		return ret
+	#
+
 	def get(self, rowNo:int, columNo:int):
 		return self.__rows[rowNo][columNo]
 	#
