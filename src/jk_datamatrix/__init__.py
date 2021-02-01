@@ -1,11 +1,10 @@
 ﻿
 
 
-__version__ = "0.2021.1.29"
+__version__ = "0.2021.2.1"
 
 
 
 from .DataMatrixRow import DataMatrixRow
 from .DataMatrix import DataMatrix
-
 

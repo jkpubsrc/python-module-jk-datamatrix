@@ -42,6 +42,16 @@ class DataMatrix(object):
 	#
 
 	@property
+	def nRows(self) -> int:
+		return len(self.__rows)
+	#
+
+	@property
+	def nColumns(self) -> int:
+		return len(self.__nCols)
+	#
+
+	@property
 	def lastRow(self) -> DataMatrixRow:
 		cmim = self.__createColumnNamesToIndexMap()
 		if self.__rows:
@@ -76,6 +86,14 @@ class DataMatrix(object):
 		dm = DataMatrix(list(self.__columnNames))
 		for row in self.__rows:
 			dm.__rows.append(list(row))
+		return dm
+	#
+
+	#
+	# Create a new empty matrix of equal structure than this matrix.
+	#
+	def cloneEmpty(self):
+		dm = DataMatrix(list(self.__columnNames))
 		return dm
 	#
 
