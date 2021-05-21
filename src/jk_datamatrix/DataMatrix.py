@@ -11,6 +11,23 @@ from .DataMatrixRow import DataMatrixRow
 
 
 
+class _MyItemGetter(object):
+
+	def __init__(self, columnNo:int):
+		self.__columnNo = columnNo
+	#
+
+	def __call__(self, row):
+		item = row[self.__columnNo]
+		if item is None:
+			return ""
+		return item
+	#
+
+#
+
+
+
 
 
 class DataMatrix(object):
@@ -350,7 +367,7 @@ class DataMatrix(object):
 
 	def orderByColumn(self, columnName:str):
 		n = self.getColumnIndexE(columnName)
-		self.__rows.sort(key = itemgetter(n))
+		self.__rows.sort(key = _MyItemGetter(n))
 	#
 
 	def getColumnIndexE(self, columnName:str) -> int:

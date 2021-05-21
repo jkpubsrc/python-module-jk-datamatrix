@@ -6,3 +6,6 @@
 
 * Added: Convenience properties
 
+2021-05-21
+
+* Added: Custom item getter to be tolerant to null-values
