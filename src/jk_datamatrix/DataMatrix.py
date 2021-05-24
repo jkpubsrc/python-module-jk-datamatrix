@@ -65,7 +65,7 @@ class DataMatrix(object):
 
 	@property
 	def nColumns(self) -> int:
-		return len(self.__nCols)
+		return self.__nCols
 	#
 
 	@property
@@ -139,6 +139,17 @@ class DataMatrix(object):
 		self.__columnNames.append(columnName)
 		for i in range(0, len(self.__rows)):
 			self.__rows[i].append(None)
+		self.__nCols += 1
+	#
+
+	def insertColumn(self, position:int, columnName:str):
+		n = self.getColumnIndex(columnName)
+		if n >= 0:
+			raise Exception("Column already exists: " + repr(columnName))
+
+		self.__columnNames.insert(position, columnName)
+		for i in range(0, len(self.__rows)):
+			self.__rows[i].insert(position, None)
 		self.__nCols += 1
 	#
 
@@ -285,6 +296,13 @@ class DataMatrix(object):
 		return False
 	#
 
+	def removeRow(self, rowNo:int) -> bool:
+		assert isinstance(rowNo, int)
+		assert 0 <= rowNo < len(self.__rows)
+
+		del self.__rows[rowNo]
+	#
+
 	def extractFilterByLatestEncountered(self, columnName:str):
 		# TODO
 		n = self.getColumnIndexE(columnName)
@@ -397,15 +415,28 @@ class DataMatrix(object):
 		self.__rows.append(data)
 	#
 
-	def dump(self):
+	def toSimpleTable(self) -> SimpleTable:
 		table = SimpleTable()
 		table.addRow(*self.__columnNames).hlineAfterRow = True
 		for row in self.__rows:
 			table.addRow(*[ str(x) for x in row ])
+		return table
+	#
+
+	def dump(self):
+		table = self.toSimpleTable()
 
 		print()
 		table.print()
 		print()
+	#
+
+	def __getitem__(self, rowNo:int) -> DataMatrixRow:
+		assert isinstance(rowNo, int)
+		assert rowNo >= 0
+
+		cmim = self.__createColumnNamesToIndexMap()
+		return DataMatrixRow(cmim, self.__rows[rowNo])
 	#
 
 #

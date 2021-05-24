@@ -39,7 +39,7 @@ setup(
 	packages = [
 		"jk_datamatrix",
 	],
-	version = "0.2021.5.21",
+	version = "0.2021.5.24",
 	zip_safe = False,
 	long_description = readme(),
 	long_description_content_type="text/markdown",
