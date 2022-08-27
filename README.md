@@ -8,7 +8,7 @@ This python module provides a class that represents a data matrix. This is basic
 
 Information about this module can be found here:
 
-* [github.org](https://github.com/jkpubsrc/python-module-jk-datamatrix)
+* [github.com](https://github.com/jkpubsrc/python-module-jk-datamatrix)
 * [pypi.org](https://pypi.org/pypi/jk_datamatrix)
 
 Why this module?
