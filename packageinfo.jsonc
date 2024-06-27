@@ -40,7 +40,9 @@
 	],
 	"requirements": {
 		"python_packages": [
-			"jk_console"
+			"jk_console",
+			"jk_typing",
+			"jk_json",
 		],
 		"python_packages_dev": [],
 		"system_apt_packages": []

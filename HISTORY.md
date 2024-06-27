@@ -17,5 +17,6 @@
 	* Added: Convert to CSV
 	* Improved: addColumn(..)
 	* Added: moveColumn(..)
+	* Added: loading and storing JSON data
 
 

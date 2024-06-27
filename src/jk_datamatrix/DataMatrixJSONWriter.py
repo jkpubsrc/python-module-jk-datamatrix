@@ -1,14 +1,16 @@
 
 
-import typing
+import json
 
-from .DataMatrixCSVWriter import DataMatrixCSVWriter
+import jk_json
+
+from ._IDataMatrix import _IDataMatrix
 
 
 
 
 
-class ICSVMixin:
+class DataMatrixJSONWriter(object):
 
 	################################################################################################################################
 	## Constants
@@ -30,16 +32,60 @@ class ICSVMixin:
 	## Public Methods
 	################################################################################################################################
 
-	def saveAsCSVFile(self, filePath:str):
-		DataMatrixCSVWriter.saveAsCSVFile(self, filePath)
+	@staticmethod
+	def saveAsJSONFilePretty(dm:_IDataMatrix, filePath:str, *, jsonEncoder:json.JSONEncoder = None):
+		assert isinstance(dm, _IDataMatrix)
+		assert isinstance(filePath, str)
+		assert filePath
+
+		jData = dm.toJSON()
+
+		if jsonEncoder is None:
+			jsonEncoder = jk_json.ObjectEncoder
+
+		with open(filePath, "w", encoding="utf-8", newline="\n") as f:
+			json.dump(jData, f, indent="\t", sort_keys=True, cls=jsonEncoder)
 	#
 
-	def toCSVStr(self) -> str:
-		return DataMatrixCSVWriter.toCSVStr(self)
+	@staticmethod
+	def saveAsJSONFile(dm:_IDataMatrix, filePath:str, *, jsonEncoder:json.JSONEncoder = None):
+		assert isinstance(dm, _IDataMatrix)
+		assert isinstance(filePath, str)
+		assert filePath
+
+		jData = dm.toJSON()
+
+		if jsonEncoder is None:
+			jsonEncoder = jk_json.ObjectEncoder
+
+		with open(filePath, "w", encoding="utf-8", newline="\n") as f:
+			json.dump(jData, f, cls=jsonEncoder)
 	#
 
-	def toCSVStrList(self) -> typing.List[str]:
-		return DataMatrixCSVWriter.toCSVStrList(self)
+	# --------------------------------------------------------------------------------------------------------------------------------
+
+	@staticmethod
+	def toJSONStrPretty(dm:_IDataMatrix, *, jsonEncoder:json.JSONEncoder = None) -> str:
+		assert isinstance(dm, _IDataMatrix)
+
+		jData = dm.toJSON()
+
+		if jsonEncoder is None:
+			jsonEncoder = jk_json.ObjectEncoder
+
+		return json.dumps(jData, indent="\t", sort_keys=True, cls=jsonEncoder)
+	#
+
+	@staticmethod
+	def toJSONStr(dm:_IDataMatrix, *, jsonEncoder:json.JSONEncoder = None) -> str:
+		assert isinstance(dm, _IDataMatrix)
+
+		jData = dm.toJSON()
+
+		if jsonEncoder is None:
+			jsonEncoder = jk_json.ObjectEncoder
+
+		return json.dumps(jData, cls=jsonEncoder)
 	#
 
 	################################################################################################################################

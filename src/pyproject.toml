@@ -27,8 +27,9 @@ classifiers = [
 		"Programming Language :: Python :: 3",
 ]
 dependencies = [
-	"jk_typing",
 	"jk_console",
+	"jk_typing",
+	"jk_json",
 ]
 
 #[project.urls]

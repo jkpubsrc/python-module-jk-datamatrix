@@ -1,14 +1,14 @@
 
 
-import typing
+import jk_json
 
-from .DataMatrixCSVWriter import DataMatrixCSVWriter
-
-
+from .DataMatrix import DataMatrix
 
 
 
-class ICSVMixin:
+
+
+class DataMatrixJSONLoader(object):
 
 	################################################################################################################################
 	## Constants
@@ -30,16 +30,46 @@ class ICSVMixin:
 	## Public Methods
 	################################################################################################################################
 
-	def saveAsCSVFile(self, filePath:str):
-		DataMatrixCSVWriter.saveAsCSVFile(self, filePath)
+	@staticmethod
+	def loadFromJSONFile(filePath:str) -> DataMatrix:
+		assert isinstance(filePath, str)
+		assert filePath
+
+		jData = jk_json.loadFromFile(filePath)
+
+		assert isinstance(jData, dict)
+		assert "columnNames" in jData
+		assert isinstance(jData["columnNames"], list)
+		assert "rows" in jData
+		assert isinstance(jData["rows"], list)
+
+		dm = DataMatrix(jData["columnNames"])
+		for jRow in jData["rows"]:
+			assert isinstance(jRow, list)
+			dm.addRow(*jRow)
+
+		return dm
 	#
 
-	def toCSVStr(self) -> str:
-		return DataMatrixCSVWriter.toCSVStr(self)
-	#
+	@staticmethod
+	def loadFromJSONStr(textToParse:str) -> DataMatrix:
+		assert isinstance(textToParse, str)
+		assert textToParse
 
-	def toCSVStrList(self) -> typing.List[str]:
-		return DataMatrixCSVWriter.toCSVStrList(self)
+		jData = jk_json.loads(textToParse)
+
+		assert isinstance(jData, dict)
+		assert "columnNames" in jData
+		assert isinstance(jData["columnNames"], list)
+		assert "rows" in jData
+		assert isinstance(jData["rows"], list)
+
+		dm = DataMatrix(jData["columnNames"])
+		for jRow in jData["rows"]:
+			assert isinstance(jRow, list)
+			dm.addRow(*jRow)
+
+		return dm
 	#
 
 	################################################################################################################################

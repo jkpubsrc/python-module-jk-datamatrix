@@ -1,14 +1,15 @@
 
 
 import typing
+import json
 
-from .DataMatrixCSVWriter import DataMatrixCSVWriter
-
-
-
+from .DataMatrixJSONWriter import DataMatrixJSONWriter
 
 
-class ICSVMixin:
+
+
+
+class IJSONMixin:
 
 	################################################################################################################################
 	## Constants
@@ -30,16 +31,20 @@ class ICSVMixin:
 	## Public Methods
 	################################################################################################################################
 
-	def saveAsCSVFile(self, filePath:str):
-		DataMatrixCSVWriter.saveAsCSVFile(self, filePath)
+	def saveAsJSONFilePretty(self, filePath:str, *, jsonEncoder:json.JSONEncoder = None):
+		DataMatrixJSONWriter.saveAsJSONFilePretty(self, filePath, jsonEncoder=jsonEncoder)
 	#
 
-	def toCSVStr(self) -> str:
-		return DataMatrixCSVWriter.toCSVStr(self)
+	def saveAsJSONFile(self, filePath:str, *, jsonEncoder:json.JSONEncoder = None):
+		DataMatrixJSONWriter.saveAsJSONFile(self, filePath, jsonEncoder=jsonEncoder)
 	#
 
-	def toCSVStrList(self) -> typing.List[str]:
-		return DataMatrixCSVWriter.toCSVStrList(self)
+	def toJSONStrPretty(self, *, jsonEncoder:json.JSONEncoder = None) -> str:
+		return DataMatrixJSONWriter.toJSONStrPretty(self, jsonEncoder=jsonEncoder)
+	#
+
+	def toJSONStr(self, *, jsonEncoder:json.JSONEncoder = None) -> str:
+		return DataMatrixJSONWriter.toJSONStr(self, jsonEncoder=jsonEncoder)
 	#
 
 	################################################################################################################################

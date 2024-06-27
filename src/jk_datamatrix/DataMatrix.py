@@ -9,6 +9,7 @@ import jk_console
 from ._IDataMatrix import _IDataMatrix
 from .DataMatrixRow import DataMatrixRow
 from .ICSVMixin import ICSVMixin
+from .IJSONMixin import IJSONMixin
 
 
 
@@ -34,7 +35,7 @@ class _MyItemGetter(object):
 
 DataMatrix = typing.NewType("DataMatrix", object)
 
-class DataMatrix(_IDataMatrix,ICSVMixin):
+class DataMatrix(_IDataMatrix,ICSVMixin,IJSONMixin):
 
 	################################################################################################################################
 	## Constructor Method
@@ -148,6 +149,17 @@ class DataMatrix(_IDataMatrix,ICSVMixin):
 		return DataMatrixRow(cmim, self.__rows[rowNo])
 	#
 
+	def addColumns(self, *columnNames:str):
+		# check if column exists
+		for columnName in columnNames:
+			if self.getColumnIndex(columnName) >= 0:
+				raise Exception("Column already exists: " + repr(columnName))
+
+		# remove the columns
+		for columnName in columnNames:
+			self.addColumn(columnName)
+	#
+
 	#
 	# Add a column.
 	#
@@ -215,6 +227,16 @@ class DataMatrix(_IDataMatrix,ICSVMixin):
 		for i in range(0, len(self.__rows)):
 			self.__rows[i].pop(n)
 		self.__nCols -= 1
+	#
+
+	def removeColumns(self, *columnNames:str):
+		# check if column exists
+		for columnName in columnNames:
+			self.getColumnIndexE(columnName)
+
+		# remove the columns
+		for columnName in columnNames:
+			self.removeColumn(columnName)
 	#
 
 	def getAllColumnValuesAsSet(self, columnName:str) -> set:
@@ -538,6 +560,23 @@ class DataMatrix(_IDataMatrix,ICSVMixin):
 		self.insertColumn(nTargetCol, columnName, colData)
 
 		return True
+	#
+
+	#
+	# Convert the data to a primitive JSON data structure.
+	#
+	# This structure has two main keys:
+	# * str[] columnNames
+	# * json[][] rows
+	#
+	# Values stored in this data matrix must be JSON compatible to get a valid JSON data structure.
+	# (This compatibility is not checked by this method.)
+	#
+	def toJSON(self) -> typing.Dict[str,typing.Any]:
+		return {
+			"columnNames": self.columnNames,
+			"rows": [ list(x) for x in self.__rows ],
+		}
 	#
 
 #
