@@ -14,3 +14,6 @@
 * 2024-06-27:
 	* Migrated: setup.py to pyproject.toml
 	* Improved: Better type constraints
+	* Added: Convert to CSV
+	* Improved: addColumn()
+

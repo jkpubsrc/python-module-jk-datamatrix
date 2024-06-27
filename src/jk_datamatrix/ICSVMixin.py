@@ -1,73 +1,54 @@
 
 
-
 import typing
+import io
+import csv
+
+from .DataMatrixCSVWriter import DataMatrixCSVWriter
 
 
 
 
 
-DataMatrixRow = typing.NewType("DataMatrixRow", object)
-
-class DataMatrixRow(object):
+class ICSVMixin:
 
 	################################################################################################################################
-	## Constructor Method
+	## Constants
 	################################################################################################################################
 
-	def __init__(self, columnNamesToIndexMap:typing.Dict[str,int], rowData:typing.List[typing.Any]):
-		self.__columnNamesToIndexMap = columnNamesToIndexMap
-		self.__rowData = rowData
-	#
+	################################################################################################################################
+	## Constructor
+	################################################################################################################################
 
 	################################################################################################################################
 	## Public Properties
 	################################################################################################################################
 
 	################################################################################################################################
-	## Helper Method
+	## Helper Methods
 	################################################################################################################################
 
 	################################################################################################################################
-	## Public Method
+	## Public Methods
 	################################################################################################################################
 
-	def __getitem__(self, ii:typing.Union[int,str]):
-		if isinstance(ii, int):
-			return self.__rowData[ii]
-		elif isinstance(ii, str):
-			n = self.__columnNamesToIndexMap[ii]
-			return self.__rowData[n]
-		else:
-			raise Exception()
+	def saveAsCSVFile(self, filePath:str):
+		DataMatrixCSVWriter.saveAsCSVFile(self, filePath)
 	#
 
-	def __setitem__(self, ii:typing.Union[int,str], value):
-		if isinstance(ii, int):
-			self.__rowData[ii] = value
-		elif isinstance(ii, str):
-			n = self.__columnNamesToIndexMap[ii]
-			self.__rowData[n] = value
-		else:
-			raise Exception()
+	def toCSVStr(self) -> str:
+		return DataMatrixCSVWriter.toCSVStr(self)
 	#
 
-	def __len__(self):
-		return len(self.__rowData)
+	def toCSVStrList(self) -> typing.List[str]:
+		return DataMatrixCSVWriter.toCSVStrList(self)
 	#
 
-	def __iter__(self):
-		return self.__rowData.__iter__()
-	#
-
-	def clone(self) -> DataMatrixRow:
-		return DataMatrixRow(self.__columnNamesToIndexMap, list(self.__rowData))
-	#
+	################################################################################################################################
+	## Public Static Methods
+	################################################################################################################################
 
 #
-
-
-
 
 
 

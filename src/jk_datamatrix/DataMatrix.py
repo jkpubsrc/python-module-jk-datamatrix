@@ -4,9 +4,11 @@
 import typing
 
 import jk_typing
-from jk_console import SimpleTable, SimpleTableCell, SimpleTableColumn, SimpleTableConstants, SimpleTableRow
+import jk_console
 
+from ._IDataMatrix import _IDataMatrix
 from .DataMatrixRow import DataMatrixRow
+from .ICSVMixin import ICSVMixin
 
 
 
@@ -32,7 +34,7 @@ class _MyItemGetter(object):
 
 DataMatrix = typing.NewType("DataMatrix", object)
 
-class DataMatrix(object):
+class DataMatrix(_IDataMatrix,ICSVMixin):
 
 	################################################################################################################################
 	## Constructor Method
@@ -42,7 +44,7 @@ class DataMatrix(object):
 	def __init__(self, columnNames:typing.List[str]):
 		self.__columnNames = columnNames
 		self.__nCols = len(self.__columnNames)
-		self.__rows = []
+		self.__rows:typing.List[typing.List[typing.Any]] = []
 	#
 
 	################################################################################################################################
@@ -57,8 +59,18 @@ class DataMatrix(object):
 	@property
 	def rows(self) -> typing.Iterable[DataMatrixRow]:
 		cmim = self.__createColumnNamesToIndexMap()
-		for row in self.__rows:
-			yield DataMatrixRow(cmim, row)
+		for _rowDat in self.__rows:
+			yield DataMatrixRow(cmim, _rowDat)
+	#
+
+	@property
+	def rowdicts(self) -> typing.Iterable[typing.Dict[str,typing.Any]]:
+		for _rowData in self.__rows:
+			_rowDict:typing.Dict[str,typing.Any] = {}
+			for i in range(0, self.__nCols):
+				colName = self.__columnNames[i]
+				_rowDict[colName] = _rowData[i]
+			yield _rowDict
 	#
 
 	@property
@@ -136,7 +148,13 @@ class DataMatrix(object):
 		return DataMatrixRow(cmim, self.__rows[rowNo])
 	#
 
-	def addColumn(self, columnName:str):
+	#
+	# Add a column.
+	#
+	# @param	str columnName		(required) A unique column name.
+	# @param	any[] values		(optional) Values to put into the column.
+	#
+	def addColumn(self, columnName:str, values:typing.Union[tuple,list] = None):
 		assert isinstance(columnName, str)
 
 		n = self.getColumnIndex(columnName)
@@ -144,8 +162,18 @@ class DataMatrix(object):
 			raise Exception("Column already exists: " + repr(columnName))
 
 		self.__columnNames.append(columnName)
-		for i in range(0, len(self.__rows)):
+
+		if values is None:
+			iMax = 0
+		else:
+			assert isinstance(values, (list,tuple))
+			iMax = min(len(values), len(self.__rows))
+
+		for i in range(0, iMax):
+			self.__rows[i].append(values[i])
+		for i in range(iMax, len(self.__rows)):
 			self.__rows[i].append(None)
+
 		self.__nCols += 1
 	#
 
@@ -419,7 +447,7 @@ class DataMatrix(object):
 	#
 
 	def addRow(self, *args, **kwargs):
-		data = list(args)
+		data:typing.List[typing.Any] = list(args)
 
 		while len(data) < self.__nCols:
 			data.append(None)
@@ -431,8 +459,8 @@ class DataMatrix(object):
 		self.__rows.append(data)
 	#
 
-	def toSimpleTable(self) -> SimpleTable:
-		table = SimpleTable()
+	def toSimpleTable(self) -> jk_console.SimpleTable:
+		table = jk_console.SimpleTable()
 		table.addRow(*self.__columnNames).hlineAfterRow = True
 		for row in self.__rows:
 			table.addRow(*[ str(x) for x in row ])
@@ -440,11 +468,23 @@ class DataMatrix(object):
 	#
 
 	def dump(self):
-		table = self.toSimpleTable()
+		print()
+		print(self.toStr())
+		print()
+	#
 
-		print()
-		table.print()
-		print()
+	def toStr(self) -> str:
+		table = self.toSimpleTable()
+		return "\n".join(table.printToLines())
+	#
+
+	def toStrLines(self) -> typing.List[str]:
+		table = self.toSimpleTable()
+		return table.printToLines()
+	#
+
+	def __str__(self):
+		return self.toStr()
 	#
 
 	def __getitem__(self, rowNo:int) -> DataMatrixRow:

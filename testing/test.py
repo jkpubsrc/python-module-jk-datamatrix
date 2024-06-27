@@ -38,5 +38,16 @@ m.removeRowsByValues(number=345)
 
 m.dump()
 
+m.addColumn("foobar", [ 1, 2, 3 ])
+
+m.dump()
+
+
+
+print()
+print()
+for line in m.toCSVStrList():
+	print(repr(line))
+
 
 
