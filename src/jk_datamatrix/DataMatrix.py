@@ -1,9 +1,9 @@
 
 
 
-from operator import itemgetter
 import typing
 
+import jk_typing
 from jk_console import SimpleTable, SimpleTableCell, SimpleTableColumn, SimpleTableConstants, SimpleTableRow
 
 from .DataMatrixRow import DataMatrixRow
@@ -30,13 +30,16 @@ class _MyItemGetter(object):
 
 
 
+DataMatrix = typing.NewType("DataMatrix", object)
+
 class DataMatrix(object):
 
 	################################################################################################################################
 	## Constructor Method
 	################################################################################################################################
 
-	def __init__(self, columnNames:list):
+	@jk_typing.checkFunctionSignature()
+	def __init__(self, columnNames:typing.List[str]):
 		self.__columnNames = columnNames
 		self.__nCols = len(self.__columnNames)
 		self.__rows = []
@@ -47,12 +50,12 @@ class DataMatrix(object):
 	################################################################################################################################
 
 	@property
-	def columnNames(self) -> list:
+	def columnNames(self) -> typing.List[str]:
 		return list(self.__columnNames)
 	#
 
 	@property
-	def rows(self):
+	def rows(self) -> typing.Iterable[DataMatrixRow]:
 		cmim = self.__createColumnNamesToIndexMap()
 		for row in self.__rows:
 			yield DataMatrixRow(cmim, row)
@@ -69,7 +72,7 @@ class DataMatrix(object):
 	#
 
 	@property
-	def lastRow(self) -> DataMatrixRow:
+	def lastRow(self) -> typing.Union[DataMatrixRow,None]:
 		cmim = self.__createColumnNamesToIndexMap()
 		if self.__rows:
 			return DataMatrixRow(cmim, self.__rows[-1])
@@ -77,7 +80,7 @@ class DataMatrix(object):
 	#
 
 	@property
-	def firstRow(self) -> DataMatrixRow:
+	def firstRow(self) -> typing.Union[DataMatrixRow,None]:
 		cmim = self.__createColumnNamesToIndexMap()
 		if self.__rows:
 			return DataMatrixRow(cmim, self.__rows[0])
@@ -88,7 +91,7 @@ class DataMatrix(object):
 	## Helper Method
 	################################################################################################################################
 
-	def __createColumnNamesToIndexMap(self) -> dict:
+	def __createColumnNamesToIndexMap(self) -> typing.Dict[str,int]:
 		ret = {}
 		for i, c in enumerate(self.__columnNames):
 			ret[c] = i
@@ -99,7 +102,7 @@ class DataMatrix(object):
 	## Public Method
 	################################################################################################################################
 
-	def clone(self):
+	def clone(self) -> DataMatrix:
 		dm = DataMatrix(list(self.__columnNames))
 		for row in self.__rows:
 			dm.__rows.append(list(row))
@@ -109,7 +112,7 @@ class DataMatrix(object):
 	#
 	# Create a new empty matrix of equal structure than this matrix.
 	#
-	def cloneEmpty(self):
+	def cloneEmpty(self) -> DataMatrix:
 		dm = DataMatrix(list(self.__columnNames))
 		return dm
 	#
@@ -127,11 +130,15 @@ class DataMatrix(object):
 	#
 
 	def getRow(self, rowNo:int) -> DataMatrixRow:
+		assert isinstance(rowNo, int)
+
 		cmim = self.__createColumnNamesToIndexMap()
 		return DataMatrixRow(cmim, self.__rows[rowNo])
 	#
 
 	def addColumn(self, columnName:str):
+		assert isinstance(columnName, str)
+
 		n = self.getColumnIndex(columnName)
 		if n >= 0:
 			raise Exception("Column already exists: " + repr(columnName))
@@ -143,6 +150,9 @@ class DataMatrix(object):
 	#
 
 	def insertColumn(self, position:int, columnName:str):
+		assert isinstance(position, int)
+		assert isinstance(columnName, str)
+
 		n = self.getColumnIndex(columnName)
 		if n >= 0:
 			raise Exception("Column already exists: " + repr(columnName))
@@ -384,11 +394,15 @@ class DataMatrix(object):
 	#
 
 	def orderByColumn(self, columnName:str):
+		assert isinstance(columnName, str)
+
 		n = self.getColumnIndexE(columnName)
 		self.__rows.sort(key = _MyItemGetter(n))
 	#
 
 	def getColumnIndexE(self, columnName:str) -> int:
+		assert isinstance(columnName, str)
+
 		for i, t in enumerate(self.__columnNames):
 			if t == columnName:
 				return i
@@ -396,6 +410,8 @@ class DataMatrix(object):
 	#
 
 	def getColumnIndex(self, columnName:str) -> int:
+		assert isinstance(columnName, str)
+
 		for i, t in enumerate(self.__columnNames):
 			if t == columnName:
 				return i

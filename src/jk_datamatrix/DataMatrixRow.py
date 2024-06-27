@@ -1,8 +1,13 @@
 
 
 
+import typing
 
 
+
+
+
+DataMatrixRow = typing.NewType("DataMatrixRow", object)
 
 class DataMatrixRow(object):
 
@@ -27,7 +32,7 @@ class DataMatrixRow(object):
 	## Public Method
 	################################################################################################################################
 
-	def __getitem__(self, ii):
+	def __getitem__(self, ii:typing.Union[int,str]):
 		if isinstance(ii, int):
 			return self.__rowData[ii]
 		elif isinstance(ii, str):
@@ -37,7 +42,7 @@ class DataMatrixRow(object):
 			raise Exception()
 	#
 
-	def __setitem__(self, ii, value):
+	def __setitem__(self, ii:typing.Union[int,str], value):
 		if isinstance(ii, int):
 			self.__rowData[ii] = value
 		elif isinstance(ii, str):
@@ -55,7 +60,7 @@ class DataMatrixRow(object):
 		return self.__rowData.__iter__()
 	#
 
-	def clone(self):
+	def clone(self) -> DataMatrixRow:
 		return DataMatrixRow(self.__columnNamesToIndexMap, list(self.__rowData))
 	#
 
