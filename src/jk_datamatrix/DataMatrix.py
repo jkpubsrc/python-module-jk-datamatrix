@@ -177,7 +177,14 @@ class DataMatrix(_IDataMatrix,ICSVMixin):
 		self.__nCols += 1
 	#
 
-	def insertColumn(self, position:int, columnName:str):
+	#
+	# Insert a column at the specified position.
+	#
+	# @param	int position		(required) The position where to insert the column.
+	# @param	str columnName		(required) A unique column name.
+	# @param	any[] values		(optional) Values to put into the column.
+	#
+	def insertColumn(self, position:int, columnName:str, values:typing.Union[tuple,list] = None):
 		assert isinstance(position, int)
 		assert isinstance(columnName, str)
 
@@ -186,8 +193,18 @@ class DataMatrix(_IDataMatrix,ICSVMixin):
 			raise Exception("Column already exists: " + repr(columnName))
 
 		self.__columnNames.insert(position, columnName)
-		for i in range(0, len(self.__rows)):
+
+		if values is None:
+			iMax = 0
+		else:
+			assert isinstance(values, (list,tuple))
+			iMax = min(len(values), len(self.__rows))
+
+		for i in range(0, iMax):
+			self.__rows[i].insert(position, values[i])
+		for i in range(iMax, len(self.__rows)):
 			self.__rows[i].insert(position, None)
+
 		self.__nCols += 1
 	#
 
@@ -210,7 +227,7 @@ class DataMatrix(_IDataMatrix,ICSVMixin):
 		return ret
 	#
 
-	def getAllColumnValues(self, columnName:str) -> list:
+	def getAllColumnValues(self, columnName:str) -> typing.List[typing.Any]:
 		n = self.getColumnIndexE(columnName)
 
 		ret = []
@@ -493,6 +510,34 @@ class DataMatrix(_IDataMatrix,ICSVMixin):
 
 		cmim = self.__createColumnNamesToIndexMap()
 		return DataMatrixRow(cmim, self.__rows[rowNo])
+	#
+
+	def moveColumn(self, columnName:str, *, before:str = None, after:str = None) -> bool:
+		# ensure that the target column exists
+		if before is not None:
+			if columnName == before:
+				return False
+			self.getColumnIndexE(before)
+		elif after is not None:
+			if columnName == after:
+				return False
+			self.getColumnIndexE(after)
+		else:
+			raise Exception("Eithe specify before or after!")
+
+		nSourceCol = self.getColumnIndexE(columnName)
+		colData = self.getAllColumnValues(columnName)
+		self.removeColumn(columnName)
+
+		if before:
+			nTargetCol = self.getColumnIndexE(before)
+		elif after:
+			nTargetCol = self.getColumnIndexE(after) + 1
+		else:
+			raise Exception()
+		self.insertColumn(nTargetCol, columnName, colData)
+
+		return True
 	#
 
 #
