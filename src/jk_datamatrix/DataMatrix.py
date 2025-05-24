@@ -111,6 +111,14 @@ class DataMatrix(_IDataMatrix,ICSVMixin,IJSONMixin):
 		return ret
 	#
 
+	def __columnMustNotExist(self, columnName:str) -> None:
+		assert isinstance(columnName, str)
+
+		for i, t in enumerate(self.__columnNames):
+			if t == columnName:
+				raise Exception("Column already exists: " + repr(columnName))
+	#
+
 	################################################################################################################################
 	## Public Method
 	################################################################################################################################
@@ -149,6 +157,11 @@ class DataMatrix(_IDataMatrix,ICSVMixin,IJSONMixin):
 		return DataMatrixRow(cmim, self.__rows[rowNo])
 	#
 
+	def hasColumn(self, columnName:str) -> bool:
+		# check if column exists
+		return self.getColumnIndex(columnName) >= 0
+	#
+
 	def addColumns(self, *columnNames:str):
 		# check if column exists
 		for columnName in columnNames:
@@ -185,6 +198,27 @@ class DataMatrix(_IDataMatrix,ICSVMixin,IJSONMixin):
 			self.__rows[i].append(values[i])
 		for i in range(iMax, len(self.__rows)):
 			self.__rows[i].append(None)
+
+		self.__nCols += 1
+	#
+
+	#
+	# Add a column.
+	#
+	# @param	str columnName		(required) A unique column name.
+	# @param	any[] values		(optional) Values to put into the column.
+	#
+	def addColumnWithDefaultValue(self, columnName:str, value:typing.Any = None):
+		assert isinstance(columnName, str)
+
+		n = self.getColumnIndex(columnName)
+		if n >= 0:
+			raise Exception("Column already exists: " + repr(columnName))
+
+		self.__columnNames.append(columnName)
+
+		for i in range(0, len(self.__rows)):
+			self.__rows[i].append(value)
 
 		self.__nCols += 1
 	#
@@ -229,6 +263,16 @@ class DataMatrix(_IDataMatrix,ICSVMixin,IJSONMixin):
 		self.__nCols -= 1
 	#
 
+	def renameColumn(self, oldColumnName:str, newColumnName:str):
+		nOld = self.getColumnIndexE(oldColumnName)
+
+		assert isinstance(newColumnName, str)
+		assert newColumnName
+		self.__columnMustNotExist(newColumnName)
+
+		self.__columnNames[nOld] = newColumnName
+	#
+
 	def removeColumns(self, *columnNames:str):
 		# check if column exists
 		for columnName in columnNames:
@@ -263,7 +307,7 @@ class DataMatrix(_IDataMatrix,ICSVMixin,IJSONMixin):
 		return self.__rows[rowNo][columNo]
 	#
 
-	def findByValue(self, columnName:str, value) -> DataMatrixRow:
+	def findByValue(self, columnName:str, value) -> typing.Union[DataMatrixRow,None]:
 		n = self.getColumnIndexE(columnName)
 
 		for irow, rowData in enumerate(self.__rows):
@@ -274,7 +318,37 @@ class DataMatrix(_IDataMatrix,ICSVMixin,IJSONMixin):
 		return None
 	#
 
-	def extractFilterByValues(self, **columnNamesToData):
+	def findByValueE(self, columnName:str, value) -> DataMatrixRow:
+		n = self.getColumnIndexE(columnName)
+
+		for irow, rowData in enumerate(self.__rows):
+			if rowData[n] == value:
+				cmim = self.__createColumnNamesToIndexMap()
+				return DataMatrixRow(cmim, rowData)
+
+		raise Exception("Not found: {}={}".format(columnName, value))
+	#
+
+	def findAllByValue(self, columnName:str, value) -> typing.List[DataMatrixRow]:
+		n = self.getColumnIndexE(columnName)
+
+		ret:typing.List[DataMatrixRow] = []
+
+		for irow, rowData in enumerate(self.__rows):
+			if rowData[n] == value:
+				cmim = self.__createColumnNamesToIndexMap()
+				ret.append(DataMatrixRow(cmim, rowData))
+
+		return ret
+	#
+
+	#
+	# Creates a new data matrix of the same structure.
+	# The rows in the new data matrix are those rows that match the specified filter criteria.
+	#
+	# @return		DataMatrix		(always) Returns a (possibly empty) data matrix with the rows matched.
+	#
+	def extractFilterByValues(self, **columnNamesToData) -> DataMatrix:
 		assert columnNamesToData
 		cmim = self.__createColumnNamesToIndexMap()
 
@@ -498,28 +572,55 @@ class DataMatrix(_IDataMatrix,ICSVMixin,IJSONMixin):
 		self.__rows.append(data)
 	#
 
-	def toSimpleTable(self) -> jk_console.SimpleTable:
+	def toSimpleTable(self, nullStr:str = "(null)") -> jk_console.SimpleTable:
 		table = jk_console.SimpleTable()
 		table.addRow(*self.__columnNames).hlineAfterRow = True
 		for row in self.__rows:
-			table.addRow(*[ str(x) for x in row ])
+			srow = [
+				nullStr if x is None else str(x)
+					for x in row
+			]
+			table.addRow(*srow)
 		return table
 	#
 
-	def dump(self):
+	def dump(self, prefix:str = "", *, nullStr="(null)"):
 		print()
-		print(self.toStr())
+		print(self.toStr(prefix, nullStr=nullStr))
 		print()
 	#
 
-	def toStr(self) -> str:
-		table = self.toSimpleTable()
-		return "\n".join(table.printToLines())
+	def dumpShortened(self, nMaxRows:int = 5, *, prefix:str = "", nullStr:str = "(null)"):
+		assert isinstance(nMaxRows, int)
+		if nMaxRows < 0:
+			nMaxRows = 0
+
+		table = jk_console.SimpleTable()
+		table.addRow(*self.__columnNames).hlineAfterRow = True
+		for i, row in enumerate(self.__rows):
+			if i >= nMaxRows:
+				table.addRow(*[ "..." for x in row ])
+				break
+			else:
+				srow = [
+					nullStr if x is None else str(x)
+						for x in row
+				]
+				table.addRow(*srow)
+
+		print()
+		print("\n".join(table.printToLines(prefix=prefix)))
+		print()
 	#
 
-	def toStrLines(self) -> typing.List[str]:
-		table = self.toSimpleTable()
-		return table.printToLines()
+	def toStr(self, prefix:str = "", *, nullStr:str = "(null)") -> str:
+		table = self.toSimpleTable(nullStr=nullStr)
+		return "\n".join(table.printToLines(prefix=prefix))
+	#
+
+	def toStrLines(self, prefix:str = "", *, nullStr:str = "(null)") -> typing.List[str]:
+		table = self.toSimpleTable(nullStr=nullStr)
+		return table.printToLines(prefix = prefix)
 	#
 
 	def __str__(self):
@@ -563,6 +664,54 @@ class DataMatrix(_IDataMatrix,ICSVMixin,IJSONMixin):
 	#
 
 	#
+	# Substitute values in a specific column by other values.
+	#
+	# @param	dict valueMap		(required) Maps old values to new values
+	# @return						Returns the number of substitutions made.
+	#
+	def substituteValuesInColumn(self, columnName:str, valueMap:dict) -> int:
+		n = self.getColumnIndexE(columnName)
+
+		assert isinstance(valueMap, dict)
+
+		nSubstitutions = 0
+		kvps = list(valueMap.items())
+		for row in self.__rows:
+			for valueOld, valueNew in kvps:
+				if row[n] == valueOld:
+					row[n] = valueNew
+					nSubstitutions += 1
+					break
+
+		return nSubstitutions
+	#
+
+	#
+	# Substitute values in a specific column by other values.
+	#
+	# @param	dict valueMap		(required) Maps old values to new values
+	# @return						Returns the number of substitutions made (= the number of rows).
+	#
+	def substituteValuesInColumnE(self, columnName:str, valueMap:dict) -> int:
+		n = self.getColumnIndexE(columnName)
+
+		assert isinstance(valueMap, dict)
+
+		kvps = list(valueMap.items())
+		for nRow, row in enumerate(self.__rows):
+			bSubstituted = False
+			for valueOld, valueNew in kvps:
+				if row[n] == valueOld:
+					row[n] = valueNew
+					bSubstituted = True
+					break
+			if not bSubstituted:
+				raise Exception("Value {} in row {} could not be substituted!".format(repr(row[n]), nRow))
+
+		return len(self.__rows)
+	#
+
+	#
 	# Convert the data to a primitive JSON data structure.
 	#
 	# This structure has two main keys:
@@ -577,6 +726,26 @@ class DataMatrix(_IDataMatrix,ICSVMixin,IJSONMixin):
 			"columnNames": self.columnNames,
 			"rows": [ list(x) for x in self.__rows ],
 		}
+	#
+
+	################################################################################################################################
+	## Public Static Method
+	################################################################################################################################
+
+	@staticmethod
+	def fromJSON(jData:dict) -> DataMatrix:
+		assert isinstance(jData, dict)
+
+		_columnNames = jData["columnNames"]
+		assert isinstance(_columnNames, list)
+
+		_rows = jData["rows"]
+		assert isinstance(_rows, list)
+
+		ret = DataMatrix(_columnNames)
+		ret.__rows = _rows
+
+		return ret
 	#
 
 #

@@ -38,6 +38,22 @@ class DataMatrixRow(object):
 		elif isinstance(ii, str):
 			n = self.__columnNamesToIndexMap[ii]
 			return self.__rowData[n]
+		elif isinstance(ii, slice):
+			return self.__rowData[ii]
+		else:
+			raise Exception()
+	#
+
+	def get(self, ii:typing.Union[int,str]) -> typing.Any:
+		if isinstance(ii, int):
+			if (ii < 0) or (ii > len(self.__rowData)):
+				return None
+			return self.__rowData[ii]
+		elif isinstance(ii, str):
+			n = self.__columnNamesToIndexMap.get(ii)
+			if n is None:
+				return n
+			return self.__rowData[n]
 		else:
 			raise Exception()
 	#

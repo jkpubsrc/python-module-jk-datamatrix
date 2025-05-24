@@ -18,5 +18,13 @@
 	* Improved: addColumn(..)
 	* Added: moveColumn(..)
 	* Added: loading and storing JSON data
+	* Added: dumpShortened()
 
+* 2024-06-29:
+	* Added: renameColumn(..)
+	* Added: substituteValuesInColumn(..) and substituteValuesInColumnE(..)
+
+* 2025-05-25:
+	* Improved: Printing the data
+	* Added: fromJSON()
 
