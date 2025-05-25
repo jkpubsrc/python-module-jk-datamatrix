@@ -1,7 +1,7 @@
 ﻿
 
 __author__ = "Jürgen Knauth"
-__version__ = "0.2025.5.24"
+__version__ = "0.2025.5.25"
 __email__ = "pubsrc@binary-overflow.de"
 __license__ = "Apache2"
 __copyright__ = "Copyright (c) 2021-2025, Jürgen Knauth"

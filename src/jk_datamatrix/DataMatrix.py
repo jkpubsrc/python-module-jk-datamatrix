@@ -46,6 +46,7 @@ class DataMatrix(_IDataMatrix,ICSVMixin,IJSONMixin):
 		self.__columnNames = columnNames
 		self.__nCols = len(self.__columnNames)
 		self.__rows:typing.List[typing.List[typing.Any]] = []
+		self.__cached_rowList:typing.Union[typing.Tuple[DataMatrixRow],None] = None
 	#
 
 	################################################################################################################################
@@ -57,11 +58,22 @@ class DataMatrix(_IDataMatrix,ICSVMixin,IJSONMixin):
 		return list(self.__columnNames)
 	#
 
+	# @property
+	# def rows(self) -> typing.Iterable[DataMatrixRow]:
+	# 	cmim = self.__createColumnNamesToIndexMap()
+	# 	for _rowDat in self.__rows:
+	# 		yield DataMatrixRow(cmim, _rowDat)
+	# #
+
 	@property
-	def rows(self) -> typing.Iterable[DataMatrixRow]:
-		cmim = self.__createColumnNamesToIndexMap()
-		for _rowDat in self.__rows:
-			yield DataMatrixRow(cmim, _rowDat)
+	def rows(self) -> typing.Tuple[DataMatrixRow]:
+		if self.__cached_rowList is None:
+			cmim = self.__createColumnNamesToIndexMap()
+			self.__cached_rowList = []
+			for _rowDat in self.__rows:
+				self.__cached_rowList.append(DataMatrixRow(cmim, _rowDat))
+
+		return self.__cached_rowList
 	#
 
 	@property
@@ -200,6 +212,8 @@ class DataMatrix(_IDataMatrix,ICSVMixin,IJSONMixin):
 			self.__rows[i].append(None)
 
 		self.__nCols += 1
+
+		self.__cached_rowList = None
 	#
 
 	#
@@ -221,6 +235,8 @@ class DataMatrix(_IDataMatrix,ICSVMixin,IJSONMixin):
 			self.__rows[i].append(value)
 
 		self.__nCols += 1
+
+		self.__cached_rowList = None
 	#
 
 	#
@@ -252,6 +268,8 @@ class DataMatrix(_IDataMatrix,ICSVMixin,IJSONMixin):
 			self.__rows[i].insert(position, None)
 
 		self.__nCols += 1
+
+		self.__cached_rowList = None
 	#
 
 	def removeColumn(self, columnName:str):
@@ -261,6 +279,8 @@ class DataMatrix(_IDataMatrix,ICSVMixin,IJSONMixin):
 		for i in range(0, len(self.__rows)):
 			self.__rows[i].pop(n)
 		self.__nCols -= 1
+
+		self.__cached_rowList = None
 	#
 
 	def renameColumn(self, oldColumnName:str, newColumnName:str):
@@ -271,6 +291,8 @@ class DataMatrix(_IDataMatrix,ICSVMixin,IJSONMixin):
 		self.__columnMustNotExist(newColumnName)
 
 		self.__columnNames[nOld] = newColumnName
+
+		self.__cached_rowList = None
 	#
 
 	def removeColumns(self, *columnNames:str):
@@ -281,6 +303,8 @@ class DataMatrix(_IDataMatrix,ICSVMixin,IJSONMixin):
 		# remove the columns
 		for columnName in columnNames:
 			self.removeColumn(columnName)
+
+		self.__cached_rowList = None
 	#
 
 	def getAllColumnValuesAsSet(self, columnName:str) -> set:
@@ -420,7 +444,11 @@ class DataMatrix(_IDataMatrix,ICSVMixin,IJSONMixin):
 		for i in reversed(listOfRowsToRemove):
 			del self.__rows[i]
 
-		return len(listOfRowsToRemove)
+		nRet = len(listOfRowsToRemove)
+		if nRet > 0:
+			self.__cached_rowList = None
+
+		return nRet
 	#
 
 	def removeRowByValues(self, **columnNamesToData) -> bool:
@@ -442,6 +470,7 @@ class DataMatrix(_IDataMatrix,ICSVMixin,IJSONMixin):
 					break
 			if bOk:
 				del self.__rows[i]
+				self.__cached_rowList = None
 				return True
 
 		return False
@@ -452,9 +481,11 @@ class DataMatrix(_IDataMatrix,ICSVMixin,IJSONMixin):
 		assert 0 <= rowNo < len(self.__rows)
 
 		del self.__rows[rowNo]
+
+		self.__cached_rowList = None
 	#
 
-	def extractFilterByLatestEncountered(self, columnName:str):
+	def extractFilterByLatestEncountered(self, columnName:str) -> DataMatrix:
 		# TODO
 		n = self.getColumnIndexE(columnName)
 
@@ -474,7 +505,7 @@ class DataMatrix(_IDataMatrix,ICSVMixin,IJSONMixin):
 		return ret
 	#
 
-	def getRowByMaxValue(self, columnName:str):
+	def getRowByMaxValue(self, columnName:str) -> typing.Union[DataMatrixRow,None]:
 		n = self.getColumnIndexE(columnName)
 
 		vStored = None
@@ -499,7 +530,7 @@ class DataMatrix(_IDataMatrix,ICSVMixin,IJSONMixin):
 			return None
 	#
 
-	def groupBy(self, keyColumnName:str, valueColumnName:str):
+	def groupBy(self, keyColumnName:str, valueColumnName:str) -> DataMatrix:
 		nKey = self.getColumnIndexE(keyColumnName)
 		nVal = self.getColumnIndexE(valueColumnName)
 
@@ -539,6 +570,8 @@ class DataMatrix(_IDataMatrix,ICSVMixin,IJSONMixin):
 
 		n = self.getColumnIndexE(columnName)
 		self.__rows.sort(key = _MyItemGetter(n))
+
+		self.__cached_rowList = None
 	#
 
 	def getColumnIndexE(self, columnName:str) -> int:
@@ -570,6 +603,8 @@ class DataMatrix(_IDataMatrix,ICSVMixin,IJSONMixin):
 			data[n] = v
 
 		self.__rows.append(data)
+
+		self.__cached_rowList = None
 	#
 
 	def toSimpleTable(self, nullStr:str = "(null)") -> jk_console.SimpleTable:
@@ -659,6 +694,8 @@ class DataMatrix(_IDataMatrix,ICSVMixin,IJSONMixin):
 		else:
 			raise Exception()
 		self.insertColumn(nTargetCol, columnName, colData)
+
+		self.__cached_rowList = None
 
 		return True
 	#

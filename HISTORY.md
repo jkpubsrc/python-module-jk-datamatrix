@@ -24,7 +24,11 @@
 	* Added: renameColumn(..)
 	* Added: substituteValuesInColumn(..) and substituteValuesInColumnE(..)
 
-* 2025-05-25:
+* 2025-05-24:
 	* Improved: Printing the data
 	* Added: fromJSON()
+
+* 2025-05-25:
+	* Improved: Caching row data objects
+	* Added: Type hints
 
